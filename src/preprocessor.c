@@ -30,19 +30,39 @@ Macro* find_macro(const char *name){
 
 void expand_macros(FILE *input, FILE *output){
 	char *line;
+	char *line_duplicate;
 	char *token;
 	Macro *macro;
 	int i;
+	bool skip_lines = false;
 
 	while ((line = read_line(input)) != NULL){
-		token = strtok(line, " \t\n");
+		line_duplicate = str_duplicate(line);
+		token = strtok(line_duplicate, " \t\n");
 		
 		if (token != NULL){
-			/*printf("%s\n", token);*/
+
+			if (strcmp(token, "macr") == 0) {
+				skip_lines = true;
+			} else if (strcmp(token, "endmacr") == 0) {
+				skip_lines = false;
+				free(line_duplicate);
+				free(line);
+				continue;
+			}
+
+			if (skip_lines) {
+				free(line_duplicate);
+				free(line);
+				continue;
+			}
+
+	
 			macro = find_macro(token);
 			if (macro != NULL) {
 				for (i = 0; i < macro->line_count; i++){
 					fputs(macro->lines[i], output);
+					fputs("\n", output);
 				}
 			} else {
 				fputs(line, output);
@@ -51,7 +71,8 @@ void expand_macros(FILE *input, FILE *output){
 		} else {
 			fputs("\n", output);
 		}
-
+		
+		free(line_duplicate);
 		free(line);	
 	}	
 }
@@ -60,7 +81,9 @@ void expand_macros(FILE *input, FILE *output){
 bool process_macro_definition(FILE *input, const char *name){
 	Macro *new_macro;
 	char *line;
+	char *trimmed_line;
 	int i;
+
 	new_macro = (Macro *)malloc(sizeof(Macro));
 	strncpy(new_macro->name, name, sizeof(new_macro->name));
 	new_macro->lines = NULL;
@@ -68,9 +91,9 @@ bool process_macro_definition(FILE *input, const char *name){
 	new_macro->next = NULL;
 
 	while ((line = read_line(input)) != NULL){
-		
-		printf("%s\n", line);
-		if (strncmp(line, "endmacr", 7) == 0){
+		trimmed_line = trim_whitespace(line);
+		printf("%s\n", trimmed_line);
+		if (strncmp(trimmed_line, "endmacr", 7) == 0){
 			free(line);
 			break;		
 		}

@@ -1,49 +1,33 @@
 /* utillity functions */
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include "utils.h"
 
 #define INITIAL_LINE_LENGTH 128
 
-static char *strtok_last;
+char* trim_whitespace(char *str) {
+	char *end;
 
-char* strtoken(char *str, const char *delim) {
-	char *start;
-	char *token;
-
-	if (str != NULL) {
-		strtok_last = str;
+	/* Trim leading space */
+	while(isspace((unsigned char)*str)){ 
+		str++;
 	}
 
-	if (strtok_last == NULL) {
-		return NULL;
+	if(*str == 0){  /* All spaces? */
+		return str;
 	}
 
-	/* Skip initial delimiters */
-	start = strtok_last;
-	while (*start && strchr(delim, *start)) {
-		start++;
+	/* Trim trailing space */
+	end = str + strlen(str) - 1;
+	while(end > str && isspace((unsigned char)*end)){ 
+		end--;
 	}
 
-	if (*start == '\0') {
-		strtok_last = NULL;
-		return NULL;
-	}
+	/* Write new null terminator character */
+	end[1] = '\0';
 
-	/* Find the end of the token */
-	token = start;
-	while (*strtok_last && !strchr(delim, *strtok_last)) {
-		strtok_last++;
-	}
-
-	if (*strtok_last) {
-		*strtok_last = '\0';
-		strtok_last++;
-	} else {
-		strtok_last = NULL;
-	}
-
-	return token;
+	return str;
 }
 
 char* read_line(FILE *file){
@@ -75,4 +59,14 @@ char* read_line(FILE *file){
 
 	line[pos] = '\0';
 	return line;
+}
+
+/* Duplicates a string by dynamically allocating memory for the copy and returning it. */
+char* str_duplicate(const char *s) {
+	size_t len = strlen(s) + 1; /* Length of the source string plus null terminator. */
+	char *dup = malloc(len); /* Allocate memory for the duplicate. */
+	if (dup != NULL) {
+		memcpy(dup, s, len); /* Copy the string into the new memory. */
+	}
+	return dup;
 }

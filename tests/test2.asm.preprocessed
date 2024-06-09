@@ -1,18 +1,16 @@
-;
+; maman14 expample
 
-MAIN:
-LOOP:
-	macr
-	cmp
-	bne
-	endmacr
-	lea
-	inc
-	mov
-	sub
-	cmp r3, #-6 	bne END 	endmacr	lea STR, r6 	inc r6	mov *r6,K 	sub r1, r4 	m_macr	dec K	jmp LOOPEND:	stopSTR:	.string “abcd” LIST: .data 6, -9	.data -100 K:	.data 31	dec
-	jmp
-END:
-STR:
-	.data
-K:
+MAIN:	add r3, LIST
+LOOP:	prn #48
+	lea STR, r6 
+	inc r6
+	mov *r6,K 
+	sub r1, r4 
+	cmp r3, #-6
+	bne END
+	dec K
+	jmp LOOP
+END:	stop
+STR:	.string “abcd” LIST: .data 6, -9
+	.data -100 
+K:	.data 31

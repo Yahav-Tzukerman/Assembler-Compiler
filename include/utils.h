@@ -8,7 +8,8 @@ typedef int bool;
 #define false 0
 
 char* read_line(FILE *file);
-char* strtoken(char *str, const char *delim);
+char* trim_whitespace(char *str);
+char* str_duplicate(const char *s);
 
 #endif /* UTILS_H */
 
