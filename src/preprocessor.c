@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "preprocessor.h"
+#include "validations.h"
 #include "error.h"
 
 #define INITIAL_LINE_LENGTH 128
@@ -78,12 +79,17 @@ void expand_macros(FILE *input, FILE *output){
 }
 
 
-bool process_macro_definition(FILE *input, const char *name){
+bool process_macro_definition(FILE *input, char *name){
 	Macro *new_macro;
 	char *line;
 	char *trimmed_line;
 	int i;
 
+	if (!validate_macro_name(name)){
+		printf("%s is not a valid macro name", name);
+		return false;
+	}
+	
 	new_macro = (Macro *)malloc(sizeof(Macro));
 	strncpy(new_macro->name, name, sizeof(new_macro->name));
 	new_macro->lines = NULL;
