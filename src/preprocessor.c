@@ -7,7 +7,8 @@
 #include "validations.h"
 #include "error.h"
 
-#define INITIAL_LINE_LENGTH 128
+#define INITIAL_LINE_CAPACITY 100
+#define LINE_LENGTH 81 /* length of a line is 80 + 1 for null trminator */
 
 static Macro *macro_list = NULL;
 static bool macros_present = false;
@@ -29,7 +30,20 @@ Macro* find_macro(const char *name){
 	return NULL;
 }
 
-void expand_macros(FILE *input, FILE *output){
+void add_preprocessed_line(Context *context, const char *line) {
+	if (context->line_count >= context->line_capacity) {
+		context->line_capacity *= 2;
+		context->preprocessed_lines = (char **)realloc(context->preprocessed_lines, context->line_capacity * sizeof(char *));
+		if (context->preprocessed_lines == NULL) {
+			add_error(ERR_MEMORY_ALLOCATION_FAILED, context->filename, context->line_number, NULL);
+			return;
+		}
+	}
+	context->preprocessed_lines[context->line_count] = str_duplicate(line);
+	context->line_count++;
+}
+
+void expand_macros(FILE *input, Context *context){
 	char *line;
 	char *line_duplicate;
 	char *token;
@@ -37,6 +51,7 @@ void expand_macros(FILE *input, FILE *output){
 	int i;
 	bool skip_lines = false;
 
+	context->line_number = 1;
 	while ((line = read_line(input)) != NULL){
 		line_duplicate = str_duplicate(line);
 		token = strtok(line_duplicate, " \t\n");
@@ -49,12 +64,14 @@ void expand_macros(FILE *input, FILE *output){
 				skip_lines = false;
 				free(line_duplicate);
 				free(line);
+				context->line_number++;
 				continue;
 			}
 
 			if (skip_lines) {
 				free(line_duplicate);
 				free(line);
+				context->line_number++;
 				continue;
 			}
 
@@ -62,35 +79,38 @@ void expand_macros(FILE *input, FILE *output){
 			macro = find_macro(token);
 			if (macro != NULL) {
 				for (i = 0; i < macro->line_count; i++){
-					fputs(macro->lines[i], output);
-					fputs("\n", output);
+					add_preprocessed_line(context, macro->lines[i]);
 				}
 			} else {
-				fputs(line, output);
-				fputs("\n", output);
+				add_preprocessed_line(context, line);
 			}
 		} else {
-			fputs("\n", output);
+			add_preprocessed_line(context, "");
 		}
 		
 		free(line_duplicate);
-		free(line);	
+		free(line);
+		context->line_number++;
 	}	
 }
 
 
-bool process_macro_definition(FILE *input, char *name){
+bool process_macro_definition(FILE *input, char *name, Context *context){
 	Macro *new_macro;
 	char *line;
 	char *trimmed_line;
-	int i;
 
 	if (!validate_macro_name(name)){
-		printf("%s is not a valid macro name", name);
+		add_error(ERR_MACRO_NAME_IS_NOT_VALID, context->filename, context->line_number, name);
 		return false;
 	}
 	
 	new_macro = (Macro *)malloc(sizeof(Macro));
+	if (new_macro == NULL) {
+		add_error(ERR_MEMORY_ALLOCATION_FAILED, context->filename, context->line_number, NULL);
+		exit(EXIT_FAILURE);
+	}
+
 	strncpy(new_macro->name, name, sizeof(new_macro->name));
 	new_macro->lines = NULL;
 	new_macro->line_count = 0;
@@ -98,35 +118,53 @@ bool process_macro_definition(FILE *input, char *name){
 
 	while ((line = read_line(input)) != NULL){
 		trimmed_line = trim_whitespace(line);
-		printf("%s\n", trimmed_line);
+		/* printf("%s\n", trimmed_line); */
 		if (strncmp(trimmed_line, "endmacr", 7) == 0){
 			free(line);
 			break;		
 		}
+
 		new_macro->line_count++;
 		new_macro->lines = (char **)realloc(new_macro->lines, new_macro->line_count * sizeof(char *));
+		if (new_macro->lines == NULL) {
+			add_error(ERR_MEMORY_ALLOCATION_FAILED, context->filename, context->line_number, NULL);
+			free(line);
+			free(new_macro);
+			return false;
+		}
 		new_macro->lines[new_macro->line_count - 1] = line;
+		context->line_number++;
 	}
 
 	add_macro(new_macro);
-	printf("name: %s\n", new_macro->name);
+	/* printf("name: %s\n", new_macro->name); 
 	for (i = 0; i <= new_macro->line_count; i++) {
 		printf("line %d: %s\n", i, new_macro->lines[i]);
 	}
-	printf("line count: %d\n", new_macro->line_count);
+	printf("line count: %d\n", new_macro->line_count); */
 	return true;
 }
 
-bool preprocess(const char *filename, const char *output_filename){
+bool preprocess(const char *filename, Context *context){
 	FILE *input;
-	FILE *output;
 	char *line;
 	char *token;
 	char *macro_name;
 
+	context->filename = filename;
+	context->line_number = 1;
+	context->preprocessed_lines = (char **)malloc(INITIAL_LINE_CAPACITY * sizeof(char *));
+	context->line_count = 0;
+	context->line_capacity = INITIAL_LINE_CAPACITY;
+
+	if (context->preprocessed_lines == NULL) {
+		add_error(ERR_MEMORY_ALLOCATION_FAILED, filename, 0, NULL);
+		return false;
+	}
+
 	input = fopen(filename, "r");
 	if (!input) {
-		perror("Error opening input file");
+		add_error(ERR_FILE_NOT_FOUND, filename, 0, NULL);
 		return false;
 	}
 
@@ -136,19 +174,20 @@ bool preprocess(const char *filename, const char *output_filename){
 		if (token != NULL && strcmp(token, "macr") == 0) {
 			macro_name = strtok(NULL, " \t\n");
 			if (macro_name != NULL) {
-				if (!process_macro_definition(input, macro_name)) {
+				if (!process_macro_definition(input, macro_name, context)) {
 					fclose(input);
 					free(line);
 					return false;
 				}
 			} else {
-				report_error("Macro name missing");
+				add_error(ERR_MACRO_NAME_MISSING, filename, context->line_number, NULL);
 				fclose(input);
 				free(line);
 				return false;
 			}
 		}
 
+		context->line_number++;
 		free(line);
 	}
 
@@ -156,27 +195,19 @@ bool preprocess(const char *filename, const char *output_filename){
 
 	/* If no macros were found, no need to create an output file */
 	if (!macros_present) {
-		return true;
+		return !has_errors();
 	}
 
 	/* Second pass: expand macros and write to the output file */
 	input = fopen(filename, "r");
 	if (!input) {
-		perror("Error reopening input file");
+		add_error(ERR_FILE_NOT_FOUND, filename, 0, NULL);
 		return false;
 	}
 
-	output = fopen(output_filename, "w");
-	if (!output) {
-		perror("Error opening output file");
-		fclose(input);
-		return false;
-	}
-
-	expand_macros(input, output);
+	expand_macros(input, context);
 
 	fclose(input);
-	fclose(output);
 
-	return true;
+	return !has_errors();
 }

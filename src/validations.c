@@ -3,7 +3,7 @@
 #include <ctype.h>
 
 /* Array of valid command strings. */
-const char* validCommands[] = {"mov", "cmp", "add", "sub", "lea", "clr", "not", "inc", "dec", "jmp", "bne", "red", "prn", "jsr", "rts", "stop"};
+const char* validCommands[] = {"mov", "cmp", "add", "sub", "lea", "clr", "not", "inc", "dec", "jmp", "bne", "red", "prn", "jsr", "rts", "stop", "macr", "endmar"};
 /* Number of valid commands in the array. */
 const int validCommandsCount = sizeof(validCommands) / sizeof(validCommands[0]);
 

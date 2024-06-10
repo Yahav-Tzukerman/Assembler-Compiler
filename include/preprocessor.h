@@ -13,11 +13,20 @@ typedef struct Macro {
     struct Macro *next;
 } Macro;
 
-bool preprocess(const char *filename, const char *output_filename);
+typedef struct {
+	const char *filename;
+	int line_number;
+	char **preprocessed_lines;
+	int line_count;
+	int line_capacity;
+} Context;
+
+bool preprocess(const char *filename, Context *context);
 void add_macro(Macro *new_macro);
 Macro *find_macro(const char *name);
-bool process_macro_definition(FILE *input, char *name);
-void expand_macros(FILE *input, FILE *output);
+bool process_macro_definition(FILE *input, char *name, Context *context);
+void expand_macros(FILE *input, Context *context);
+void add_preprocessed_line(Context *context, const char *line);
 
 #endif /* PREPROCESSOR_H */
 

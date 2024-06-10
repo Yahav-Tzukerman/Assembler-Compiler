@@ -1,8 +1,12 @@
-; maman14 expample
+; maman14 expample macro 2
 
 MAIN:	add r3, LIST
 LOOP:	prn #48
 	macr m_macr 
+	cmp r3, #-6 
+	bne END 
+	endmacr
+	macr tzuki 
 	cmp r3, #-6 
 	bne END 
 	endmacr
@@ -11,6 +15,7 @@ LOOP:	prn #48
 	mov *r6,K 
 	sub r1, r4 
 	m_macr
+	tzuki
 	dec K
 	jmp LOOP
 END:	stop

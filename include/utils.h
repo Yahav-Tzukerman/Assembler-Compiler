@@ -3,6 +3,8 @@
 
 #include <stdio.h>
 
+#define NULL_TERMINATOR '\0'
+
 typedef int bool;
 #define true 1
 #define false 0
