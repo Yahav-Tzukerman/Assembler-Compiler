@@ -108,7 +108,7 @@ bool process_macro_definition(FILE *input, char *name, Context *context){
 	new_macro = (Macro *)malloc(sizeof(Macro));
 	if (new_macro == NULL) {
 		add_error(ERR_MEMORY_ALLOCATION_FAILED, context->filename, context->line_number, NULL);
-		exit(EXIT_FAILURE);
+		return false;
 	}
 
 	strncpy(new_macro->name, name, sizeof(new_macro->name));

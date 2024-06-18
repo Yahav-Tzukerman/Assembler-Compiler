@@ -7,27 +7,32 @@
 #include "assembler.h"
 #include "preprocessor.h"
 #include "error.h"
+#include "file_manager.h"
 
 int main(int argc, char *argv[]) {
 	const char **filenames;
-	int file_count;
+	int i, j, file_count;
 	bool success;
 	Context *contexts;
 
 
 	if (argc < 2) {
-		printf("Usage: %s <sourcefile.asm>\n", argv[0]);
+		printf("Usage: %s <sourcefile>\n", argv[0]);
 		return 1;
 	}
 
 	init_error_handling();
-	
-	filenames = (const char **) &argv[1];
-	file_count = argc - 1;
+
+	if (!prepare_filenames(argc, argv, &filenames, &file_count)) {
+		print_errors();
+		free_errors();
+		return 1;
+	}
 
 	contexts = (Context *)malloc(file_count * sizeof(Context));
 	if (contexts == NULL) {
 		fprintf(stderr, "Failed to allocate memory for contexts.\n");
+		free_filenames(filenames, file_count);
 		return 1;
 	}
 
@@ -41,6 +46,8 @@ int main(int argc, char *argv[]) {
 		printf("Assembly completed successfully for all files.\n");
 	}
 
+	free(contexts);
+	free_filenames(filenames, file_count);
 	free_errors();
 	return success ? 0 : 1;
 }

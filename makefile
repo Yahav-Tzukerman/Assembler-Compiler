@@ -1,7 +1,7 @@
 CC = gcc
-CFLAGS = -ansi -Wall -pedantic -Iinclude
+CFLAGS = -ansi -Wall -pedantic -Iinclude -g
 
-OBJS = src/main.o src/assembler.o src/preprocessor.o src/utils.o src/error.o src/validations.o
+OBJS = src/main.o src/assembler.o src/preprocessor.o src/utils.o src/error.o src/validations.o src/file_manager.o
 
 all: assembler
 
@@ -25,6 +25,9 @@ src/error.o: src/error.c include/error.h
 
 src/validations.o: src/validations.c include/validations.h
 	$(CC) $(CFLAGS) -c src/validations.c -o src/validations.o
+
+src/file_manager.o: src/file_manager.c include/file_manager.h
+	$(CC) $(CFLAGS) -c src/file_manager.c -o src/file_manager.o
 
 clean:
 	rm -f src/*.o assembler

@@ -74,9 +74,15 @@ bool has_errors() {
 }
 
 void free_errors() {
-	if (errors != NULL) {
-		free(errors);
-		errors = NULL;
+	int i;
+	for (i = 0; i < error_count; i++) {
+		if (errors[i].filename) {
+			free(errors[i].filename);
+		}
+		if (errors[i].message) {
+			free(errors[i].message);
+		}
 	}
+	error_count = 0;
 }
 

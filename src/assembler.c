@@ -11,7 +11,7 @@
 #include "assembler.h"
 
 bool preprocess_all_files(int file_count, const char **filenames, Context *contexts) {
-	int i;	
+	int i;
 	bool success = true;
 	for (i = 0; i < file_count; i++) {
 		if (!preprocess(filenames[i], &contexts[i])) {
@@ -19,29 +19,6 @@ bool preprocess_all_files(int file_count, const char **filenames, Context *conte
 		}
 	}
 	return success;
-}
-
-void create_preprocessed_files(int file_count, Context *contexts) {
-	int i, j;
-	char output_filename[256];
-	FILE *output;
-
-	for (i = 0; i < file_count; i++) {
-		sprintf(output_filename, "%s.preprocessed", contexts[i].filename);
-		output = fopen(output_filename, "w");
-		if (!output) {
-			add_error(ERR_FILE_NOT_FOUND, output_filename, 0, NULL);
-			continue;
-		}
-
-		for (j = 0; j < contexts[i].line_count; j++) {
-			fputs(contexts[i].preprocessed_lines[j], output);
-			fputs("\n", output);
-			free(contexts[i].preprocessed_lines[j]);
-		}
-		fclose(output);
-		printf("Preprocessing succeeded. Output written to %s\n", output_filename);
-	}
 }
 
 bool assemble(const char *filename) {
