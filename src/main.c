@@ -4,16 +4,20 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "assembler.h"
 #include "preprocessor.h"
 #include "error.h"
 #include "file_manager.h"
+#include "output.h"
 
 int main(int argc, char *argv[]) {
 	const char **filenames;
-	int i, j, file_count;
+	int i, file_count;
 	bool success;
 	Context *contexts;
+	char am_filename[MAX_FILENAME_LENGTH];
+	AssembledProgram program;
 
 
 	if (argc < 2) {
@@ -43,7 +47,21 @@ int main(int argc, char *argv[]) {
 		printf("Assembly failed due to errors.\n");
 	} else {
 		create_preprocessed_files(file_count, contexts);
-		printf("Assembly completed successfully for all files.\n");
+
+		for (i = 0; i < file_count; i++) {
+			sprintf(am_filename, "%.*s.am", (int)(strlen(contexts[i].filename) - 3), contexts[i].filename);
+			if (!assemble(am_filename, &program)) {
+				success = false;
+			}
+		}
+		
+		if (success) {
+			save_program_to_file(&program, "output.ob");
+			printf("Assembly completed successfully for all files.\n");
+		} else {
+			print_errors();
+			printf("Assembly failed due to errors.\n");
+		}
 	}
 
 	free(contexts);

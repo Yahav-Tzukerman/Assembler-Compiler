@@ -2,10 +2,10 @@
 #define ASSEMBLER_H
 
 #include "utils.h"
+#include "output.h"
 #include "preprocessor.h"
 
-bool assemble(const char *filename);
+bool assemble(const char *filename, AssembledProgram *program);
 bool preprocess_all_files(int file_count, const char **filenames, Context *contexts);
-void create_preprocessed_files(int file_count, Context *contexts);
 
 #endif /* ASSEMBLER_H */

@@ -19,6 +19,7 @@ const char *error_messages[] = {
 	"Macro name missing.",
 	"Macro name is not valid: %s",
 	"Memory allocation failed.",
+	"Invalid Operation: %s",
 	/* Add more error messages as needed */
 	"Unknown error."
 };

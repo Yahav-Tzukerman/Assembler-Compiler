@@ -8,6 +8,7 @@ typedef enum {
 	ERR_MACRO_NAME_MISSING,
 	ERR_MACRO_NAME_IS_NOT_VALID,
 	ERR_MEMORY_ALLOCATION_FAILED,
+	ERR_INVALID_OPCODE,
 	/* Add more error codes as needed */
 	ERR_UNKNOWN
 } ErrorCode;

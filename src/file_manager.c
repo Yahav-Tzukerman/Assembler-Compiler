@@ -4,7 +4,7 @@
 #include "file_manager.h"
 #include "error.h"
 
-#define MAX_FILENAME_LENGTH 256
+
 
 void add_as_suffix(char *filename) {
 	if (!strstr(filename, ".as")) {
@@ -101,5 +101,18 @@ void create_preprocessed_files(int file_count, Context *contexts) {
 		fclose(output);
 		printf("Preprocessing succeeded. Output written to %s\n", output_filename);
 	}
+}
+
+void save_program_to_file(const AssembledProgram *program, const char *filename) {
+	int i;
+	FILE *file = fopen(filename, "w");
+	if (!file) {
+		perror("Failed to open output file");
+		exit(EXIT_FAILURE);
+	}
+	for (i = 0; i < program->size; i++) {
+		fprintf(file, "%04X %04X\n", program->memory[i].address, program->memory[i].word);
+	}
+	fclose(file);
 }
 
