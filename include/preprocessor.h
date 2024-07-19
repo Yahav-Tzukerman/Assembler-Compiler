@@ -27,6 +27,8 @@ Macro *find_macro(const char *name);
 bool process_macro_definition(FILE *input, char *name, Context *context);
 void expand_macros(FILE *input, Context *context);
 void add_preprocessed_line(Context *context, const char *line);
+void free_context(Context *context);
+void free_macros();
 
 #endif /* PREPROCESSOR_H */
 

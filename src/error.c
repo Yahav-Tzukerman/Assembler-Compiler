@@ -38,7 +38,6 @@ void init_error_handling() {
 }
 
 void add_error(ErrorCode code, const char *filename, int line, const char *detail) {
-
 	if (error_count >= error_capacity) {
 		error_capacity *= 2;
 		errors = (Error *)realloc(errors, error_capacity * sizeof(Error));
@@ -49,14 +48,15 @@ void add_error(ErrorCode code, const char *filename, int line, const char *detai
 	}
 
 	errors[error_count].code = code;
-	sprintf(errors[error_count].filename, "%s", filename);
+	strncpy(errors[error_count].filename, filename, sizeof(errors[error_count].filename) - 1);
+	errors[error_count].filename[sizeof(errors[error_count].filename) - 1] = '\0';
 	errors[error_count].line = line;
 	
 	if (detail) {
 		sprintf(errors[error_count].message, error_messages[code], detail);
 	} else {
 		strncpy(errors[error_count].message, error_messages[code], sizeof(errors[error_count].message) - 1);
-		errors[error_count].message[sizeof(errors[error_count].message) - 1] = NULL_TERMINATOR;
+		errors[error_count].message[sizeof(errors[error_count].message) - 1] = '\0';
 	}
 	error_count++;
 	error_flag = true;
@@ -74,15 +74,8 @@ bool has_errors() {
 }
 
 void free_errors() {
-	int i;
-	for (i = 0; i < error_count; i++) {
-		if (errors[i].filename) {
-			free(errors[i].filename);
-		}
-		if (errors[i].message) {
-			free(errors[i].message);
-		}
-	}
+	free(errors);
+	errors = NULL;
 	error_count = 0;
 }
 

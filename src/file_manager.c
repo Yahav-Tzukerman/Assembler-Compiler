@@ -97,6 +97,7 @@ void create_preprocessed_files(int file_count, Context *contexts) {
 			fputs(contexts[i].preprocessed_lines[j], output);
 			fputs("\n", output);
 			free(contexts[i].preprocessed_lines[j]);
+			contexts[i].preprocessed_lines[j] = NULL;
 		}
 		fclose(output);
 		printf("Preprocessing succeeded. Output written to %s\n", output_filename);

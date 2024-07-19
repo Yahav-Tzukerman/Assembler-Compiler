@@ -11,7 +11,7 @@
 
 int main(int argc, char *argv[]) {
 	const char **filenames;
-	int i, j, file_count;
+	int i, file_count;
 	bool success;
 	Context *contexts;
 
@@ -46,8 +46,13 @@ int main(int argc, char *argv[]) {
 		printf("Assembly completed successfully for all files.\n");
 	}
 
+	for (i = 0; i < file_count; i++) {
+		free_context(&contexts[i]);
+	}
+
 	free(contexts);
 	free_filenames(filenames, file_count);
+	free_macros();
 	free_errors();
 	return success ? 0 : 1;
 }
