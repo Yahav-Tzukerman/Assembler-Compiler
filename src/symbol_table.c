@@ -1,1 +1,0 @@
-/* A module to manage a symbol table for labels and variables. */

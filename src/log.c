@@ -1,1 +1,0 @@
-/* Source file to implement logging functions. */
